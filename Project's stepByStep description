@@ -1,0 +1,113 @@
+In this paper, we will divide the pipeline into 5 semi-independent steps: 1) Dataset description and
+pre-processing. 2) Training m1 Initial GANs for sketch-to-Monet Translation. 3) Training m2 Castles’
+dataset preparation and model training for Data Augmentation. 4) Training m3 Final GANs model
+for improved sketch-to-Monet Translation with castles.
+
+
+Step 1: Dataset
+The base dataset used in the project is a group of Monet’s paintings cropped into a format of 256x256
+pixels. This dataset was obtained from a repository [12] which also was used in the work of Isola et al.
+for cycleGANs [10]. There are 1073 training images and 122 for testing. This dataset can be found
+ready to use in folder 01MonetRealDataset inside the "dataset" folder in the provided drive [13].
+As we want to use sketches as the condition of our project, each of Monet’s paintings will be turned
+into a sketch. Therefore, we used an online tool that gives excellent results. The web page’s name is
+BeFunky [14]. This platform allows the user to upload an image and create a sketch of it online.
+The last step to prepare this first dataset was to create pairs of images to feed the cGAN. We had
+to concatenate both the sketch and the painting in a single 512x256 pixel with the painting first
+followed by the sketch (click this LINK4 to look at the concatenated image.) Please look at both
+datasets by opening 02 Monet sketch dataset, and 03 MonetMerged. To make the concatenation,
+we used a simple python script written in a jupyter notebook. This notebook’s name is 01 Image
+concatenation.ipynb. Please open link [19] that contains all jupyter notebooks used in the project
+
+
+.JUPYTER NOTEBOOKS
+
+2: Sketch-to-Monet
+As mentioned before, this project will compare the use of cGANs against CycleGANs for image data
+augmentation. So first, let us describe the cGAN’s pipeline.
+The dataset was uploaded, split, and turned into tensors for future processing (please open the
+notebook entitled 02 cGAN Monet to appreciate the process step by step). We built the generator
+according to [1]Isola’s work and pix2pix methodology by down-sampling the images from 256x256
+to 1x1, creating the U-Net links and then starting re-sampling the image from 1x1 to 256x256. In
+the executed cell 29, please appreciate an example of the generator without any training using a test
+image, or click the following LINK5
+The next step was to create the discriminator, which uses convolutional neural networks in 2D, and
+a fixed patch size. Please see an example in the executed cell 35 or click this LINK6 to appreciate
+how the untrained discriminator decides which patches are authentic and which ones are not. Finally,
+losses and gradients are defined, and we train this algorithm for 40 epochs as this was the default
+number given in the paper.
+Talking about CycleGAN’s pipeline, the general process of ingestion, data processing, and architecture
+are the same. We were lucky enough to find a library that allows users to download these architectures.
+For example, when going into the executed cell no 11 (on 03 cycleGAN sketch to monet.ipynb)
+you will be able to appreciate how by using the pix2pix library, the user can download the U-Net
+generator and the patchGAN discriminator. For this architecture, we trained it for 20 epochs.
+
+
+Step 3: Impressionist Castles Generation
+This is the most crucial part of the project. This section will describe how we gathered a small dataset
+and produced more data using different GANs architectures.
+First, we did a quick search on Google, looking for two different datasets: 1) Pictures of castles
+painted with an impressionist technique. 2) A dataset of actual real castle images.
+For dataset 1, we only downloaded 50 different impressionist-like paintings of castles. This dataset
+was also turned into sketches using the BeFunky platform, and they both can be found under the
+names: 07 Castles Impressionism and 08 Sketch castles impressionism. Click this LINK7 to see an
+example of these images. Dataset 2 was more straightforward, as we could find a complete dataset
+4
+which already contained more than 1000 different pictures of real castles on the webpage "images.cv"
+[15]. Click this LINK8 to look at examples of real castle dataset. We had to refine the images, as
+some contained text or banners. Once debugged, this dataset was resized, turned into .jpg, and finally
+turned into sketches. Click this LINK9 to see an example of the sketch. Please find these datasets
+inside the provided folder: 09 real castle train, 10 real castle test, 11 real castles sketches.
+Let us first describe the cGAN. Loading the data and creating the model has the same procedure
+described before. It is essential to mention that as we are training an algorithm with only 50 pairs of
+pictures, we decided to have some overfit in the model and train this specific model for 50 epochs
+instead of only 40. This notebook can be found under the name 04 cGAN for castles.ipynb. Moving
+on to the CycleGAN, the process was recycled from the last implementation, changing only the
+algorithm’s inputs. This model was intentionally overfitted and trained for 100 epochs instead of only
+20. Please find more detail on the process opening notebook 05 cycleGAN castles.ipynb.
+The purpose of overfitting both models is to ensure the accurate generation of castles with an
+Impressionist technique. Once both models were trained, we used each model (trained on the 50
+impressionist castles dataset) to generate 1200 new images of impressionist castles using the sketches
+converted from real pictures of castles. The results of generating new impressionist castles from both
+models can be found in the provided folder under 13 cGANCastlePredictions and 14 CycleGAN
+Castle Predictions.
+
+
+Step 4: Sketch-to-Monet/Castles
+The final step was to create a dataset that contains two different types of paintings: 1) The original
+Monet’s artwork with 1000 different paintings and 2) The augmented data provided by the GANs,
+which contains 1200 generated pictures of impressionist castles. For this purpose, we first combined
+all pictures of Monet’s original paintings and the generated castles into a single folder. Subsequently,
+we split them into train and test.
+Once the dataset was ready, the final models were now trained; starting with cGAN, we used the
+standard 20 epochs to train the model with the training dataset. If desired, you can validate the
+process and results by opening the notebook called 06 Final cGAN Monet + Castles.ipynb. The final
+cGAN model’s results can be found in the folder titled 15 Final Predictions cGAN Monet+Castles.
+Our last step in the data augmentation pipeline was to train the CycleGAN with the new dataset. This
+model trained for 20 epochs and as you can see when opening the notebook 07 Final cycleGAN
+castles-monet.ipynb. To validate the model’s predictions, please open the folder entitled 16 Final
+Predictions CycleGAN monet+castles.
+
+
+References and links
+
+[10] J. Long, E. Shelhamer & T. Darrell (2015) Fully convolutional networks for semantic segmentation. In
+Proceedings of the IEEE conference on computer vision and pattern recognition pp. 3431-3440
+[11] Obukhov, A. & Krasnyanskiy, M. 2020, October. Quality assessment method for GAN based on modified
+metrics inception score and Fréchet inception distance. it In Proceedings of the Computational Methods in
+Systems and Software pp. 102-114
+[12] Jun-Yan Zhu Taesung Park Phillip Isola &Alexei A. Efros (August 24, 2020) Monet2Photo CycleGAN
+Dataset http://efrosgans.eecs.berkeley.edu/cyclegan/datasets/
+[13] Ledesma, Rodrigo (2022) Images repository on One Drive
+https://1drv.ms/u/s!Ar9hEjcPB2vDhewD8PDajtOKXqdFtg?e=IJDbYU
+[14] BeFunky photo art editor https://www.befunky.com/create/photo-to-art/
+[15] Images.cv Download 2K Castle labeled image dataset https://images.cv/dataset/castle-image-classificationdataset
+[16] House, J. (2004). Impressionism: Paint and politics. Yale University Press.
+[17] Goodfellow, I. Pouget-Abadie, J. Mirza, M., Xu B., Warde-Farley, D. Ozair, S. & Bengio, Y. (2020)
+Generative adversarial networks. Communications of the ACM pp. 139-144.
+[18] Pathak, D. Krahenbuhl, P. Donahue, J. Darrell, T. & Efros, A. A. (2016). Context encoders: Feature
+learning by inpainting. In Proceedings of the IEEE conference on computer vision and pattern recognition pp.
+2536-2544
+[19] Ledesma, Rodrigo (2022) Jupyter Notebooks repository on One Drive
+https://1drv.ms/u/s!Ar9hEjcPB2vDhtoaZMYCLMIkvyJuMg?e=2CpH6m
+[20] Ledesma, Rodrigo (2022) Drive folder with
